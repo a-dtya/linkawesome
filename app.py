@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request, render_template, send_from_directory
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS #type: ignore
+from flask_sqlalchemy import SQLAlchemy #type: ignore
+from werkzeug.security import generate_password_hash, check_password_hash
+import jwt, datetime
 import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -11,28 +13,36 @@ CORS(app)
 # --- Database Configuration ---
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'linkhub.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'supersecret'  # change in production
 db = SQLAlchemy(app)
 # -----------------------------
 
 # --- Database Model Definitions ---
 class Profile(db.Model):
-    id = db.Column(db.Integer, primary_key=True) # Will always be 1
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
     username = db.Column(db.String(80), nullable=False, default="@yourusername")
-    bio = db.Column(db.String(255), nullable=True, default="Your default bio")
-    # Points to the new static path
-    profile_picture_url = db.Column(db.String(255), nullable=True, default="/static/profile.png") 
+    bio = db.Column(db.String(255), default="Your default bio")
+    profile_picture_url = db.Column(db.String(255), default="/static/profile.png")
+
+    links = db.relationship('Link', backref='profile', lazy=True)
 
     def to_dict(self):
         return {
+            "id": self.id,
+            "email": self.email,
             "username": self.username,
             "bio": self.bio,
             "profile_picture_url": self.profile_picture_url
         }
 
+
 class Link(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     url = db.Column(db.String(500), nullable=False)
+    profile_id = db.Column(db.Integer, db.ForeignKey('profile.id'), nullable=False)
 
     def to_dict(self):
         return {
@@ -40,6 +50,7 @@ class Link(db.Model):
             "title": self.title,
             "url": self.url
         }
+
 # --------------------------------
 # --- Admin API Routes ---
 
@@ -112,6 +123,40 @@ def get_data():
         "links": [link.to_dict() for link in all_links]
     }
     return jsonify(data)
+
+# SIGNUP
+@app.route('/api/signup', methods=['POST'])
+def signup():
+    data = request.json
+    email = data['email']
+    password = generate_password_hash(data['password'])
+    
+    if Profile.query.filter_by(email=email).first():
+        return jsonify({"error": "Email already exists"}), 400
+
+    new_user = Profile(email=email, password=password)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"message": "User created successfully"}), 201
+
+
+# LOGIN
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.json
+    email = data['email']
+    password = data['password']
+    user = Profile.query.filter_by(email=email).first()
+
+    if not user or not check_password_hash(user.password, password):
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    token = jwt.encode({
+        'user_id': user.id,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+    }, app.config['SECRET_KEY'], algorithm='HS256')
+
+    return jsonify({"token": token})
 # --------------------------------
 
 if __name__ == '__main__':
