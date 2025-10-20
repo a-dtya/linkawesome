@@ -1,0 +1,65 @@
+/* --- Global Styles --- */
+body {
+    font-family: 'Consolas', 'Courier New', monospace; /* Retro terminal font */
+    background: #000000; /* Deep black background */
+    color: #ffffff; /* White text */
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+}
+
+/* --- Main Content Container --- */
+main {
+    max-width: 600px;
+    margin: 40px auto;
+}
+
+/* --- Header & Profile Picture --- */
+header img {
+    border-radius: 50%; /* Makes the image a circle */
+    border: 3px solid #A020F0; /* Neon purple border */
+    box-shadow: 0 0 20px rgba(160, 32, 240, 0.6); /* Purple glow */
+}
+
+header h1 {
+    font-size: 1.5em;
+    margin-top: 15px;
+    color: #A020F0; /* Neon purple text for the username */
+    text-shadow: 0 0 5px #A020F0, 0 0 2px #ffffff; /* Glow effect */
+}
+
+header p {
+    color: #bbbbbb; /* Lighter gray for the bio */
+    margin-bottom: 40px; /* Increased margin for better spacing */
+}
+
+/* --- Links Section --- */
+section ul {
+    list-style-type: none; /* Removes the default bullet points */
+    padding: 0;
+}
+
+section li {
+    margin-bottom: 20px;
+}
+
+section a {
+    display: block;
+    padding: 15px;
+    background: #111111; /* Dark background for links */
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 8px;
+    border: 1px solid #A020F0; /* Neon purple border on links */
+    text-transform: uppercase; /* Gives a stylized, retro look */
+    letter-spacing: 1px;
+    transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+/* --- Interactive Hover Effect --- */
+section a:hover {
+    background: #A020F0; /* Fill with purple on hover */
+    color: #000000; /* Black text for contrast */
+    box-shadow: 0 0 15px #A020F0, 0 0 5px #ffffff; /* Intense glow on hover */
+    transform: scale(1.03); /* Slightly enlarges the link on hover */
+}

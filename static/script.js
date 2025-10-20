@@ -2,7 +2,7 @@
 window.addEventListener('DOMContentLoaded', () => {
     
     // The URL of our Flask API endpoint
-    const API_URL = 'http://127.0.0.1:5000/api/data';
+    const API_URL = 'http://127.0.0.1:5000/api/data'; // <-- FIX 1: Point to the API route
 
     // Use the fetch API to get data from our backend
     fetch(API_URL)
@@ -19,32 +19,25 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function updateProfile(data) {
-    // Update the header information
-    document.getElementById('profile-pic').src = data.profile_picture_url;
-    document.getElementById('username').textContent = data.username;
-    document.getElementById('bio').textContent = data.bio;
+    // FIX 2: Access data from the nested 'profile' object
+    const profile = data.profile; 
+    document.getElementById('profile-pic').src = profile.profile_picture_url;
+    document.getElementById('username').textContent = profile.username;
+    document.getElementById('bio').textContent = profile.bio;
 
     // Get the container for our links
     const linksList = document.getElementById('links-list');
     
-    // Clear any existing links (optional, but good practice)
-    linksList.innerHTML = '';
+    linksList.innerHTML = ''; // Clear any existing links
 
-    // Loop through the links from the data and create HTML elements
-    data.links.forEach(link => {
-        // Create the list item
+    // Loop through the links from the data
+    data.links.forEach(link => { // This part was already correct
         const li = document.createElement('li');
-        
-        // Create the anchor tag (the link)
         const a = document.createElement('a');
         a.href = link.url;
         a.textContent = link.title;
-        a.target = '_blank'; // Open link in a new tab
-
-        // Add the anchor tag inside the list item
+        a.target = '_blank';
         li.appendChild(a);
-
-        // Add the list item to our list container
         linksList.appendChild(li);
     });
 }
